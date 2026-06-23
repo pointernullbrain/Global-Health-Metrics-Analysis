@@ -3,7 +3,6 @@
 ## 🔎 Overview
 This repository contains an Apache Zeppelin notebook that uses PySpark and Spark SQL to ingest, clean, transform, and analyze global healthcare data. The pipeline processes a raw World Bank dataset, normalizes complex schemas, imputes missing values using window functions, and performs exploratory data analysis (EDA) on key health indicators.
 
-## Problem Statement
 Evaluating public health outcomes exclusively through financial expenditure leads inconclusive results. This project investigates healthcare efficiency by analyzing how economic inputs (GDP per capita) and infrastructure availability (hospital beds) impact real-world human outcomes (life expentancy, infant mortality).
 
 ## 🌉 Architecture & Data Flow
@@ -48,7 +47,33 @@ The final structured dataset tracks the following indicators across multiple cou
   ```
 * Applied a `.cache()` step to register the final dataframe directly in the cluster's memory, ensuring sub-second response times for downstream visual querying
 
-## SQL Queries
+## Results & Analysis
+**Life expectancy trend by country**
+<img width="1656" height="308" alt="image" src="https://github.com/user-attachments/assets/71a7cdf4-0d91-4f0a-a742-a28196a659cf" />
+
+**Hospital beds available per 1000 citizens by country**
+<img width="1656" height="306" alt="image" src="https://github.com/user-attachments/assets/b817cfb2-62c4-45b1-8508-10ce51fb474c" />
+
+**Countries with the highest infant mortality rate**
+<img width="1655" height="336" alt="image" src="https://github.com/user-attachments/assets/12e31a51-5a45-413d-befa-cb58baaf01c6" />
+
+
+| Country             | Average Healthcare Spending (GDP) Percent | Average Life Expectancy | Net Life Expectancy Growth |
+|---------------------|-------------------------------------------|-------------------------|----------------------------|
+| Japan               | 9.53                                      | 83.1                    | 3.5                        |
+| Singapore           | 3.76                                      | 81.5                    | 5.6                        |
+| United States       | 15.7                                      | 78.0                    | 2.6                        |
+| Malaysia            | 3.38                                      | 75.0                    | 4.1                        |
+| Thailand            | 3.7                                       | 74.9                    | 6.4                        |
+| Viet Nam            | 4.58                                      | 73.8                    | 2.6                        |
+| Indonesia           | 2.71                                      | 68.6                    | 5.8                        |
+
+* Higher spending does not necessarily guarantee better health outcomes. For example, the United States spends 15.7% of their GDP on healthcare but the average life expectancy is only 78.0 years while having a growth of only 2.6 years.
+* Japan has the highest average life expectancy of 83.1 years while maintaining a moderate spending of 9.53% of their GDP. Singapore has the second highest average life expectancy at 81.5 years, while spending only 3.76% of their GDP and also having a larger life expectancy growth of 5.6. Both of these nations have efficient infrastructure resource allocation.
+* Malaysia has a highly convservative spending of 3.38% of their GDP while maintaining a moderate average life expectancy of 75.0 years. However, Thailand, which has a similar spending and average life expectancy, is able to achieve a greater net life expectancy growth over Malaysia at 6.4 years.
+* Malaysia’s infrastructure trends shows a steady, reduction on facilities, with local hospital beds per 1,000 citizens declining from 2.05 in the year 2000 down to approximately 1.92 by the year 2024.
+
+### SQL Queries
 The transformed records are registered as a temporary Spark SQL view: `cleaned_pipeline_df.createOrReplaceTempView("global_health_metrics")`
 
 * Query 1: Country Profile
@@ -75,22 +100,14 @@ The transformed records are registered as a temporary Spark SQL view: `cleaned_p
   ORDER BY 
       Avg_Life_Expectancy_Years DESC
   ```
-## Results
 
-| Country             | Average Healthcare Spending (GDP) Percent | Average Life Expectancy | Net Life Expectancy Growth |
-|---------------------|-------------------------------------------|-------------------------|----------------------------|
-| Japan               | 9.53                                      | 83.1                    | 3.5                        |
-| Singapore           | 3.76                                      | 81.5                    | 5.6                        |
-| United States       | 15.7                                      | 78.0                    | 2.6                        |
-| Malaysia            | 3.38                                      | 75.0                    | 4.1                        |
-| Thailand            | 3.7                                       | 74.9                    | 6.4                        |
-| Viet Nam            | 4.58                                      | 73.8                    | 2.6                        |
-| Indonesia           | 2.71                                      | 68.6                    | 5.8                        |
+### Recommendations
+* Implementing an efficient healthcare system provides the best outcome for human health, as validated in the results by nations like Singapore. Although a country may spend a large portion of its GDP on healthcare, the returns are diminishing if the underlying framework is not sufficient or flawed.
+* Thailand is a notable nation, in the sense that they achieved a 6.4 year life expectancy growth with a relatively low percentage of GDP spending. Developing nations should look to Thailand's healthcare policies to identify reproducible strategies.
+* Life expectancy in Malaysia is steadily rising. However, there is a decline in the number of hospital beds per 1000 citizens, indicating that better, more strategic investment is needed. As the population ages, unresolved infrastructure issues will heavily impact long-term healthcare systems.
 
-* Higher spending does not necessarily guarantee better health outcomes. For example, the United States spends 15.7% of their GDP on healthcare but the average life expectancy is only 78.0 years while having a growth of only 2.6 years.
-* Japan has the highest average life expectancy of 83.1 years while maintaining a moderate spending of 9.53% of their GDP. Singapore has the second highest average life expectancy at 81.5 years, while spending only 3.76% of their GDP and also having a larger life expectancy growth of 5.6. Both of these nations have efficient infrastructure resource allocation.
-* Malaysia has a highly convservative spending of 3.38% of their GDP while maintaining a moderate average life expectancy of 75.0 years. However, Thailand, which has a similar spending and average life expectancy, is able to achieve a greater net life expectancy growth over Malaysia at 6.4 years.
-* Malaysia’s infrastructure trends shows a steady, reduction on facilities, with local hospital beds per 1,000 citizens declining from 2.05 in the year 2000 down to approximately 1.92 by the year 2024.
+## Conclusion
+
 
 ## ⚙ Prerequisites
 * Apache Spark (2.x or 3.x).
