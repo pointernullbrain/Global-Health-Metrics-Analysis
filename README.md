@@ -10,11 +10,11 @@ Evaluating public health outcomes exclusively through financial expenditure lead
 
 * **Data Ingestion**: Reads raw CSV healthcare data from an HDFS cluster (`hdfs:///user/maria_dev/healthcare/health.csv`).
 * **Schema Standardization**: Cleans raw column headers (e.g., removing `[YR2000]` artifacts) and replaces string representations of nulls (`..`) with native Spark Nulls.
-* **Reshaping (Unpivot & Pivot)**: Uses Spark's `stack` expression to melt wide-format year columns into long-format rows, then pivots specific health series codes into dedicated analytical columns.
-* **Missing Value Imputation**: Employs PySpark Window functions partitioned by country to calculate historical averages, conditionally imputing missing data (e.g., hospital beds per 1k).
-* **In-Memory Caching**: Caches the cleaned DataFrame to optimize downstream SQL queries and visualizations.
-* **Exploratory Data Analysis**: Registers a temporary SQL view (`global_health_metrics`) to query historical trends for specific countries (like Malaysia) and aggregate global rankings.
-
+* **Reshaping (Unpivot & Pivot)**: Uses Spark's `stack` expression to melt wide-format year columns into long-format rows, then pivots specific health series codes into dedicated columns.
+* **Missing Value Imputation**: Uses PySpark Window functions partitioned by country to calculate historical averages, conditionally imputing missing data (e.g., hospital beds per 1k).
+* **Data Warehouse Persistence (Apache Hive)**: Physically writes and materializes the clean analytical dataset into the managed Hadoop ecosystem as a persistent Hive table (`global_health_metrics`) using an overwrite execution mode. Includes a  `try-except` fallback block to register an in-memory temporary view if warehouse clusters are unreachable.
+* **Exploratory Data Analysis**: Executes multi-dimensional analytics natively through Spark SQL against the managed warehouse view.
+  
 ## 🔑 Key Metrics Tracked
 The final structured dataset tracks the following indicators across multiple countries and years:
 | Field Name                    | Data Type | Description                                               |
@@ -52,7 +52,7 @@ The final structured dataset tracks the following indicators across multiple cou
 The transformed records are registered as a temporary Spark SQL view: `cleaned_pipeline_df.createOrReplaceTempView("global_health_metrics")`
 
 * Query 1: Country Profile
-  This query pulls the localized yearly progression of investments and corresponding life expectancies. The Zeppelin notebook leverages dynamic forms (`${country=MYS}`) to easily filter outputs directly from the user interface
+  This query pulls the localized yearly progression of investments and corresponding life expectancies. The Zeppelin notebook uses dynamic forms (`${country=MYS}`) to easily filter outputs directly from the user interface.
   ```sql
   SELECT Year, country_name, health_expenditure_gdp, life_expectancy, hospital_beds_per_1k
   FROM global_health_metrics
@@ -65,26 +65,41 @@ The transformed records are registered as a temporary Spark SQL view: `cleaned_p
   SELECT 
     country_name AS Country,
     ROUND(AVG(health_expenditure_gdp), 2) AS Avg_Healthcare_Spending_GDP_Pct,
-    ROUND(AVG(life_expectancy), 1) AS Avg_Life_Expectancy_Years,
-    ROUND(MAX(life_expectancy) - MIN(life_expectancy), 1) AS Net_Life_Expectancy_Growth
-  FROM global_health_metrics
-  GROUP BY country_name
-  ORDER BY Avg_Life_Expectancy_Years DESC;
+    ROUND(AVG(life_expectancy), 1) AS Avg_Life_Expectancy_Years
+  FROM 
+      global_health_metrics
+  WHERE 
+      country_code != 'EAS'  -- Crucial filter: removes the macro aggregate to keep comparisons strictly peer-to-peer
+  GROUP BY 
+      country_name
+  ORDER BY 
+      Avg_Life_Expectancy_Years DESC
   ```
-## Results (later revise language)
-  * Higher spending as a percentage of a nation's GDP does not automatically guarantee superior health outcomes. The United States exhibits a massive average     healthcare spend of 15.7% of its total GDP, yet yields a comparatively lower average life expectancy of 78.0 years alongside a minor net lifetime expansion growth of 2.6 years over the observed era
-  * Nations like Japan and Singapore demonstrate highly optimal infrastructure resource allocation. Japan leads the global cohort with an average life expectancy of 83.1 years while maintaining a moderate 9.53% GDP spend profile. Singapore secures an average lifespan of 81.5 years and a major net expansion gain of 5.6 years, while spending an average of just 3.76% of its GDP on health.
-  * In Southeast Asia, Malaysia maintains a stable profile, averaging a 75.0-year life expectancy on a highly conservative 3.38% GDP spend profile. However, neighboring Thailand indicates a massive net life expectancy growth of 6.4 years using a nearly identical budget footprint (3.70% of GDP).
-  * A granular inspection of Malaysia’s micro-trends shows a steady, marginal compression in structural capacities, with local hospital beds per 1,000 citizens declining from 2.05 in the year 2000 down to approximately 1.92 by the year 2024.
+## Results
+
+| Country             | Average Healthcare Spending (GDP) Percent | Average Life Expectancy | Net Life Expectancy Growth |
+|---------------------|-------------------------------------------|-------------------------|----------------------------|
+| Japan               | 9.53                                      | 83.1                    | 3.5                        |
+| Singapore           | 3.76                                      | 81.5                    | 5.6                        |
+| United States       | 15.7                                      | 78.0                    | 2.6                        |
+| Malaysia            | 3.38                                      | 75.0                    | 4.1                        |
+| Thailand            | 3.7                                       | 74.9                    | 6.4                        |
+| Viet Nam            | 4.58                                      | 73.8                    | 2.6                        |
+| Indonesia           | 2.71                                      | 68.6                    | 5.8                        |
+
+* Higher spending does not necessarily guarantee better health outcomes. For example, the United States spends 15.7% of their GDP on healthcare but the average life expectancy is only 78.0 years while having a growth of only 2.6 years.
+* Japan has the highest average life expectancy of 83.1 years while maintaining a moderate spending of 9.53% of their GDP. Singapore has the second highest average life expectancy at 81.5 years, while spending only 3.76% of their GDP and also having a larger life expectancy growth of 5.6. Both of these nations have efficient infrastructure resource allocation.
+* Malaysia has a highly convservative spending of 3.38% of their GDP while maintaining a moderate average life expectancy of 75.0 years. However, Thailand, which has a similar spending and average life expectancy, is able to achieve a greater net life expectancy growth over Malaysia at 6.4 years.
+* Malaysia’s infrastructure trends shows a steady, reduction on facilities, with local hospital beds per 1,000 citizens declining from 2.05 in the year 2000 down to approximately 1.92 by the year 2024.
 
 ## ⚙ Prerequisites
-* Apache Spark (2.x or 3.x)
-* Apache Zeppelin
-* Hadoop Distributed File System (HDFS)
-* Python 3.x with PySpark
+* Apache Spark (2.x or 3.x).
+* Apache Zeppelin.
+* Apache Hive Data Warehouse.
+* Python 3.x with PySpark.
 
 ## 💾 Usage
 1. Import the `final_assignment.json` file into your Apache Zeppelin environment.
 2. Ensure the source data is placed in the designated HDFS path.
 3. Run the notebook paragraphs sequentially. 
-4. Use Zeppelin's built-in charting features to visualize the outputs of the Spark SQL paragraphs. Dynamic form variables (like `${country=MYS}`) can be adjusted directly in the UI to filter different regions.
+4. Use Zeppelin's built-in charting features to visualize the outputs of the Spark SQL paragraphs. Dynamic variables (like `${country=MYS}`) can be adjusted directly in the UI to filter different regions.
