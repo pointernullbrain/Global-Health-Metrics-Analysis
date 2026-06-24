@@ -32,7 +32,7 @@ The final structured dataset tracks the following indicators across multiple cou
 * The raw dataset records null data as a string character (..), which prevents numerical operations
 * Data like `hospital_beds_per_1k` are irregularly reported by certain countries like Singapore, resulting in incomplete data
 
-## Preprocessing and Data Cleaning
+## 🧹 Preprocessing and Data Cleaning
 * Extracted year text from nested column definitions (e.g., matching "2000 [YR2000]" and casting to a clean "2000" header name)
 * Replaced string instances of `".."` with actual PySpark `Null` identifiers, forcing the data columns into numeric `FloatType` blocks
 * Used PySpark SQL's `stack` expression to transform wide horizontal columns (representing years 2000–2024) into a vertically scalable relational layout containing standardized `Year` and `Value` variables
@@ -47,7 +47,7 @@ The final structured dataset tracks the following indicators across multiple cou
   ```
 * Applied a `.cache()` step to register the final dataframe directly in the cluster's memory, ensuring sub-second response times for downstream visual querying
 
-## Results & Analysis
+## 📊 Results & Analysis
 **Life expectancy trend by country**
 <img width="1656" height="308" alt="image" src="https://github.com/user-attachments/assets/71a7cdf4-0d91-4f0a-a742-a28196a659cf" />
 
@@ -55,18 +55,35 @@ The final structured dataset tracks the following indicators across multiple cou
 <img width="1656" height="306" alt="image" src="https://github.com/user-attachments/assets/b817cfb2-62c4-45b1-8508-10ce51fb474c" />
 
 **Countries with the highest infant mortality rate**
-<img width="1655" height="336" alt="image" src="https://github.com/user-attachments/assets/12e31a51-5a45-413d-befa-cb58baaf01c6" />
+<img width="1653" height="318" alt="image" src="https://github.com/user-attachments/assets/10cf1b95-0714-4e03-95db-1a5fabc56d05" />
+* Indonesia has the highest average infant mortality rate at 26.1 per 1000 live births. However, Indonesia also spends the least on healthcare, at 2.71% of their GDP while having the second highest net life expectancy growth of 5.8 years.
+* Singapore has the least infant mortality rate, at 2.26, beating Japan which has an infant mortality rate of 2.32. This highlights Singapore's efficient healthcare system.
+
+**Annual percentage growth rate per capita of healthcare spending in Malaysia against peer benchmark (Thailand) and regional benchmark (East and Pacific Asia)**
+<img width="1672" height="383" alt="healthcare_growth_rate" src="https://github.com/user-attachments/assets/6d69d497-fecf-4200-b7aa-ad7fa0d3c183" />
+* This chart uses an SQL `LAG` function to compute the annual percentage growth rate of per capita health expenditure. This highlights nations which are aggressively expanding their financial investments to their healthcare systems.
+* Malaysia's trajectory (light blue line) is plotted alongside Thailand (orange line) and East and Pacific Asia (dark blue line).
+* Malaysia has the highest expenditure increase in 2006, at 36.23%, which is higher than the regional baseline for that period.
+* The financial trajectory of Malaysia is in the negative during the pandemic period (2021-2022), at -13.54% following increased expenditure into emergency pandemic funds. Rollback of these funds show a subsequent increase of spending in the followng years.
+
+**Malaysia's performance against regional benchmark (East and Pacific Asia)**
+<img width="1642" height="292" alt="my_performance_against_benchmark" src="https://github.com/user-attachments/assets/dc5c1e31-6e75-4d38-9b75-5b8104e0f243" />
+* By using a self-join operation, Malaysia's annual life expectancy can be isolated and the gap between the annual life expectancy of the regional benchmark can be computed.
+* Positive trends are observed from 2000 until 2013, indicating that Malaysia's healthcare system is outperforming the regional benchmark.
+* From 2014 until 2022, Malaysia's healthcare system's efficiency sees a decline, where advancing development in neighbouring countries are a potential cause for this decline.
+* During the COVID-19 pandemic period, around 2020 until 2022, there is a sharp decline in 2021, where there is a strain on the healthcare system at that time.
+* The data shows that the life expectancy is recovering post pandemic, beginning in 2023.
 
 
-| Country             | Average Healthcare Spending (GDP) Percent | Average Life Expectancy | Net Life Expectancy Growth |
-|---------------------|-------------------------------------------|-------------------------|----------------------------|
-| Japan               | 9.53                                      | 83.1                    | 3.5                        |
-| Singapore           | 3.76                                      | 81.5                    | 5.6                        |
-| United States       | 15.7                                      | 78.0                    | 2.6                        |
-| Malaysia            | 3.38                                      | 75.0                    | 4.1                        |
-| Thailand            | 3.7                                       | 74.9                    | 6.4                        |
-| Viet Nam            | 4.58                                      | 73.8                    | 2.6                        |
-| Indonesia           | 2.71                                      | 68.6                    | 5.8                        |
+| Country       | Average Healthcare Spending (% GDP) | Average Life Expectancy (years) | Net Life Expectancy Growth (years) | Average Infant Mortality (per 1000 live births) |
+|---------------|-------------------------------------|---------------------------------|------------------------------------|-------------------------------------------------|
+| Japan         | 9.53                                | 83.1                            | 3.5                                | 2.3                                             |
+| Singapore     | 3.76                                | 81.5                            | 5.6                                | 2.3                                             |
+| United States | 15.7                                | 78.0                            | 2.6                                | 6.1                                             |
+| Malaysia      | 3.38                                | 75.0                            | 4.1                                | 6.7                                             |
+| Thailand      | 3.7                                 | 74.9                            | 6.4                                | 11.8                                            |
+| Viet Nam      | 4.58                                | 73.8                            | 2.6                                | 16.4                                            |
+| Indonesia     | 2.71                                | 68.6                            | 5.8                                | 26.1                                            |
 
 * Higher spending does not necessarily guarantee better health outcomes. For example, the United States spends 15.7% of their GDP on healthcare but the average life expectancy is only 78.0 years while having a growth of only 2.6 years.
 * Japan has the highest average life expectancy of 83.1 years while maintaining a moderate spending of 9.53% of their GDP. Singapore has the second highest average life expectancy at 81.5 years, while spending only 3.76% of their GDP and also having a larger life expectancy growth of 5.6. Both of these nations have efficient infrastructure resource allocation.
@@ -74,7 +91,7 @@ The final structured dataset tracks the following indicators across multiple cou
 * Malaysia’s infrastructure trends shows a steady, reduction on facilities, with local hospital beds per 1,000 citizens declining from 2.05 in the year 2000 down to approximately 1.92 by the year 2024.
 
 ### SQL Queries
-The transformed records are registered as a temporary Spark SQL view: `cleaned_pipeline_df.createOrReplaceTempView("global_health_metrics")`
+The transformed records are registered as a temporary Spark SQL view: `cleaned_pipeline_df.createOrReplaceTempView("global_health_metrics")`. Zeppelin allows for visualisations of the results of SQL queries.
 
 * Query 1: Country Profile
   This query pulls the localized yearly progression of investments and corresponding life expectancies. The Zeppelin notebook uses dynamic forms (`${country=MYS}`) to easily filter outputs directly from the user interface.
@@ -88,9 +105,10 @@ The transformed records are registered as a temporary Spark SQL view: `cleaned_p
 * Query 2: Healthcare Investment Insights
   ```sql
   SELECT 
-    country_name AS Country,
-    ROUND(AVG(health_expenditure_gdp), 2) AS Avg_Healthcare_Spending_GDP_Pct,
-    ROUND(AVG(life_expectancy), 1) AS Avg_Life_Expectancy_Years
+      country_name AS Country,
+      ROUND(AVG(health_expenditure_gdp), 2) AS Avg_Healthcare_Spending_GDP_Pct,
+      ROUND(AVG(life_expectancy), 1) AS Avg_Life_Expectancy_Years,
+      ROUND(AVG(infant_mortality), 1) AS Avg_Infant_Mortality
   FROM 
       global_health_metrics
   WHERE 
@@ -100,14 +118,84 @@ The transformed records are registered as a temporary Spark SQL view: `cleaned_p
   ORDER BY 
       Avg_Life_Expectancy_Years DESC
   ```
+* Query 3: Visualisations of Trends of Hospital Beds and Life Expectancy
+  ```sql
+  SELECT Year, country_name, life_expectancy 
+  FROM global_health_metrics 
+  WHERE country_code IN ('MYS', 'SGP', 'IDN', 'VNM', 'THA', 'JPN', 'USA')
+  ORDER BY Year ASC
+  ```
+
+  ```sql
+  SELECT Year, country_name, hospital_beds_per_1k 
+  FROM global_health_metrics 
+  WHERE country_code IN ('MYS', 'SGP', 'IDN', 'VNM', 'THA', 'JPN', 'USA')
+  ORDER BY Year ASC
+  ```
+
+* Query 4: Per Capita Healthcare Spending: Year-over-Year (YoY) Growth Trajectory
+  ```sql
+  WITH SpendingTrends AS (
+    SELECT 
+        Year,
+        country_name,
+        country_code,
+        health_expenditure_per_capita AS current_spend,
+        LAG(health_expenditure_per_capita, 1) OVER (PARTITION BY country_name ORDER BY Year) AS previous_spend
+    FROM 
+        global_health_metrics
+  )
+  SELECT 
+      Year,
+      country_name AS Country,
+      ROUND(current_spend, 2) AS Spend_Per_Capita_USD,
+      ROUND(((current_spend - previous_spend) / previous_spend) * 100, 2) AS YoY_Growth_Rate_Pct
+  FROM 
+      SpendingTrends
+  WHERE 
+      previous_spend IS NOT NULL 
+      AND Year >= 2002
+      -- Native Spark SQL array checking: clean, robust, and handles spaces perfectly
+      AND array_contains(split('${checkbox:Select Countries=MYS,MYS|SGP|IDN|THA|VNM|JPN|USA|EAS}', ','), country_code)
+  ORDER BY 
+      Country, Year ASC
+  ```
+
+* Query 5: Life Expectancy Performance Delta: Malaysia vs. Regional Benchmark
+  ```sql
+  WITH RegionalBaseline AS (
+    SELECT 
+        Year, 
+        life_expectancy AS regional_avg 
+    FROM 
+        global_health_metrics 
+    WHERE 
+        country_code = 'EAS'
+  )
+  SELECT 
+      m.Year,
+      ROUND(m.life_expectancy, 1) AS Malaysia_Life_Exp,
+      ROUND(r.regional_avg, 1) AS Regional_Avg_Life_Exp,
+      ROUND(m.life_expectancy - r.regional_avg, 2) AS Malaysia_Outperformance_Years
+  FROM 
+      global_health_metrics m
+  JOIN 
+      RegionalBaseline r ON m.Year = r.Year
+  WHERE 
+      m.country_code = 'MYS'
+  ORDER BY 
+      m.Year ASC
+  ```
 
 ### Recommendations
 * Implementing an efficient healthcare system provides the best outcome for human health, as validated in the results by nations like Singapore. Although a country may spend a large portion of its GDP on healthcare, the returns are diminishing if the underlying framework is not sufficient or flawed.
 * Thailand is a notable nation, in the sense that they achieved a 6.4 year life expectancy growth with a relatively low percentage of GDP spending. Developing nations should look to Thailand's healthcare policies to identify reproducible strategies.
 * Life expectancy in Malaysia is steadily rising. However, there is a decline in the number of hospital beds per 1000 citizens, indicating that better, more strategic investment is needed. As the population ages, unresolved infrastructure issues will heavily impact long-term healthcare systems.
 
-## Conclusion
+## 📍 Conclusion
+This data engineering and analytics pipeline successfully ingested, standardized, and analyzed a complex, sparse global healthcare dataset. By using tools like PySpark for distributed data processing and Spark SQL for analytical querying, the raw, unformatted records are able to be transformed into an aggregated, analytical schema.
 
+The following exploratory data analysis highlighted that while financial investment in healthcare is necessary, the *efficiency* of that investment is the true driver of extended life expectancy. The findings underline the importance of data-driven policy-making, demonstrating that developing nations can achieve world-class health outcomes through targeted, highly efficient public health strategies rather than strictly mirroring the heavy expenditure models of Western economies.
 
 ## ⚙ Prerequisites
 * Apache Spark (2.x or 3.x).
