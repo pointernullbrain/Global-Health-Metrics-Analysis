@@ -204,7 +204,7 @@ The following exploratory data analysis highlighted that while financial investm
 * Python 3.x with PySpark.
 
 ## 💾 Usage
-1. Import the `final_assignment.json` file into your Apache Zeppelin environment.
-2. Ensure the source data is placed in the designated HDFS path.
+1. Import the .json file into your Apache Zeppelin environment.
+2. Ensure the source data (health.csv) is placed in the designated HDFS path.
 3. Run the notebook paragraphs sequentially. 
 4. Use Zeppelin's built-in charting features to visualize the outputs of the Spark SQL paragraphs. Dynamic variables (like `${country=MYS}`) can be adjusted directly in the UI to filter different regions.
