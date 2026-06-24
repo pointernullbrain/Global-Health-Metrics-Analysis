@@ -3,7 +3,7 @@
 ## 🔎 Overview
 This repository contains an Apache Zeppelin notebook that uses PySpark and Spark SQL to ingest, clean, transform, and analyze global healthcare data. The pipeline processes a raw World Bank dataset, normalizes complex schemas, imputes missing values using window functions, and performs exploratory data analysis (EDA) on key health indicators.
 
-Evaluating public health outcomes exclusively through financial expenditure leads inconclusive results. This project investigates healthcare efficiency by analyzing how economic inputs (GDP per capita) and infrastructure availability (hospital beds) impact real-world human outcomes (life expentancy, infant mortality).
+Evaluating public health outcomes exclusively through financial expenditure leads inconclusive results. This project investigates healthcare efficiency by analyzing how economic inputs (GDP per capita) and infrastructure availability (hospital beds) impact real-world human outcomes (life expentancy, infant mortality) (Ke et al., 2011).
 
 ## 🌉 Architecture & Data Flow
 
@@ -208,3 +208,6 @@ The following exploratory data analysis highlighted that while financial investm
 2. Ensure the source data (health.csv) is placed in the designated HDFS path.
 3. Run the notebook paragraphs sequentially. 
 4. Use Zeppelin's built-in charting features to visualize the outputs of the Spark SQL paragraphs. Dynamic variables (like `${country=MYS}`) can be adjusted directly in the UI to filter different regions.
+
+## 👨‍🏫 References
+Ke, X., Saksena, P., & Holly, A. (2011). *The Determinants of Health Expenditure: A Country-Level Panel Data Analysis.* www.resultsfordevelopment.org
